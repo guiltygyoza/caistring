@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 
-from contracts.str import (Str, str_concat, str_concat_array, str_from_literal, str_empty)
+from contracts.Str import (Str, str_concat, str_concat_array, str_from_literal, str_empty)
 
 const P_OPEN = '<p>'
 const P_CLOSE = '</p>'

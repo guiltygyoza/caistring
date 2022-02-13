@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import (signed_div_rem, unsigned_div_rem, sign, assert_nn, abs_value, assert_not_zero, sqrt)
+from starkware.cairo.common.math import (unsigned_div_rem, sign, assert_nn, abs_value, assert_not_zero, sqrt)
 from starkware.cairo.common.math_cmp import (is_nn, is_le, is_not_zero)
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
@@ -129,4 +129,103 @@ func str_empty  {range_check_ptr} (
     let (arr : felt*) = alloc()
 
     return ( Str (len,arr) )
+end
+
+#
+# Convert felt (decimal) into ascii-encoded felt, return a string
+# e.g. 7 => 55
+# e.g. 77 => 55*256 + 55 = 14135
+# fail if needed more than 31 characters
+#
+func str_from_number {range_check_ptr} (
+    num : felt) -> (str : Str):
+    alloc_locals
+
+    #
+    # Handle special case first
+    #
+    if num == 0:
+        return str_from_literal ('0')
+    end
+
+    let (arr_ascii) = alloc()
+    let (
+        arr_ascii_len : felt
+    ) = _recurse_ascii_array_from_number (
+        remain = num,
+        arr_ascii_len = 0,
+        arr_ascii = arr_ascii
+    )
+
+    let (ascii) = _recurse_ascii_from_ascii_array_inverse (
+        ascii = 0,
+        len = arr_ascii_len,
+        arr = arr_ascii,
+        idx = 0
+    )
+
+    let (str : Str) = str_from_literal (ascii)
+    # let str = Str (arr_ascii_len, arr_ascii)
+    return (str)
+end
+
+func _recurse_ascii_array_from_number {range_check_ptr} (
+        remain : felt,
+        arr_ascii_len : felt,
+        arr_ascii : felt*
+    ) -> (
+        arr_ascii_final_len : felt
+    ):
+    alloc_locals
+
+    if remain == 0:
+        return (arr_ascii_len)
+    end
+
+    let (remain_nxt, digit) = unsigned_div_rem (remain, 10)
+    let (ascii) = ascii_from_digit (digit)
+    assert arr_ascii[arr_ascii_len] = ascii
+
+    #
+    # Tail recursion
+    #
+    let (arr_ascii_final_len) = _recurse_ascii_array_from_number (
+        remain = remain_nxt,
+        arr_ascii_len = arr_ascii_len + 1,
+        arr_ascii = arr_ascii
+    )
+    return (arr_ascii_final_len)
+end
+
+func _recurse_ascii_from_ascii_array_inverse {range_check_ptr} (
+        ascii : felt,
+        len : felt,
+        arr : felt*,
+        idx : felt
+    ) -> (ascii_final : felt):
+
+    if idx == len:
+        return (ascii)
+    end
+
+    let ascii_nxt = ascii * 256 + arr[len-idx-1]
+
+    #
+    # Tail recursion
+    #
+    let (ascii_final) = _recurse_ascii_from_ascii_array_inverse (
+        ascii = ascii_nxt,
+        len = len,
+        arr = arr,
+        idx = idx + 1
+    )
+    return (ascii_final)
+end
+
+#
+# Get ascii in decimal value from given digit
+# note: does not check if input is indeed a digit
+#
+func ascii_from_digit (digit : felt) -> (ascii : felt):
+    return (digit + '0')
 end

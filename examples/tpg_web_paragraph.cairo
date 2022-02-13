@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
-from contracts.str import (Str, str_concat_array, str_from_literal)
+from contracts.Str import (Str, str_concat_array, str_from_literal)
 from contracts.html_paragraph import convert_str_array_to_html_string
 
 

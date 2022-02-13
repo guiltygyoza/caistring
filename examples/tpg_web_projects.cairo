@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.alloc import alloc
-from contracts.str import (Str, str_concat_array, str_from_literal)
+from contracts.Str import (Str, str_concat_array, str_from_literal)
 from contracts.html_table import convert_str_table_to_html_string
 
 
